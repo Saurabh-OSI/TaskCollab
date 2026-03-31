@@ -4,6 +4,15 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# ===== FRONTEND =====
+node_modules/
+dist/
+build/
+
+# ===== BACKEND =====
+target/
+*.log
+
 ### STS ###
 .apt_generated
 .classpath
@@ -12,6 +21,19 @@ target/
 .settings
 .springBeans
 .sts4-cache
+
+# ===== ENV FILES =====
+.env
+.env.local
+
+# ===== IDE FILES =====
+.vscode/
+.idea/
+*.iml
+
+# ===== OS FILES =====
+.DS_Store
+Thumbs.db
 
 ### IntelliJ IDEA ###
 .idea

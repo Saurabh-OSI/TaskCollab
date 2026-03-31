@@ -1,0 +1,21 @@
+# ===== FRONTEND =====
+node_modules/
+dist/
+build/
+
+# ===== BACKEND =====
+target/
+*.log
+
+# ===== ENV =====
+.env
+.env.local
+
+# ===== IDE =====
+.vscode/
+.idea/
+*.iml
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
