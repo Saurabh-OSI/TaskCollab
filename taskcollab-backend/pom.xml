@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.saurabh</groupId>
-	<artifactId>taskcollab</artifactId>
+	<artifactId>taskcollab-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>taskcollab</name>
-	<description>Real-Time Task Collaboration Platform</description>
+	<description>TaskCollab – Real-Time Collaborative Task Management System</description>
 	<url/>
 	<licenses>
 		<license/>

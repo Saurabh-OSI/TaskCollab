@@ -353,7 +353,7 @@ function Dashboard({ logout }) {
     try {
       await API.post(`/api/tasks/${listId}`, {
         title: title.trim(),
-        description: "Created from UI",
+        description: "Created",
       });
     } catch (error) {
       console.error(error);
@@ -669,9 +669,12 @@ function Dashboard({ logout }) {
                                   <h3 className="text-lg font-semibold">{list.name}</h3>
                                   <p className="text-sm text-slate-500">{(tasksByList[list.id] || []).length} tasks</p>
                                 </div>
-                                <button onClick={() => deleteList(list.id)} className="text-sm text-red-600">
-                                  Delete
-                                </button>
+                                <button
+  onClick={() => deleteList(list.id)}
+  className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md transition duration-200"
+>
+  Delete
+</button>
                               </div>
 
                               <Droppable droppableId={String(list.id)} type="TASK">
@@ -694,9 +697,12 @@ function Dashboard({ logout }) {
                                                   <p className="font-semibold">{task.title}</p>
                                                   <p className="text-sm text-slate-600">{task.description}</p>
                                                 </div>
-                                                <button onClick={() => deleteTask(task.id)} className="text-sm text-red-600">
-                                                  Delete
-                                                </button>
+                                                <button
+  onClick={() => deleteTask(task.id)}
+  className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-md transition duration-200"
+>
+  Delete
+</button>
                                               </div>
 
                                               <div className="mt-2 flex flex-wrap gap-2">
