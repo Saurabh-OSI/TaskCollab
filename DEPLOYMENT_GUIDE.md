@@ -97,20 +97,76 @@ VITE_API_URL=https://your-backend-railway-url.railway.app
 
 Use the Railway backend URL from Step 1, Part 1.
 
-### Step 4: Deploy
+### Step 4: Automatic Deployment (via GitHub Actions)
 
-1. Click **Deploy**
+The GitHub Actions workflow will automatically deploy your frontend to Vercel when you push to `main`. 
+
+To enable this, add Vercel secrets to GitHub:
+- Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions**
+- Add these secrets:
+  - `VERCEL_TOKEN` - [Get from Vercel Account Settings](https://vercel.com/account/tokens)
+  - `VERCEL_ORG_ID` - [Get from Vercel Team Settings](https://vercel.com/teams)
+  - `VERCEL_PROJECT_ID` - [Get from Vercel Project Settings](https://vercel.com/dashboard)
+
+### Step 5: Deploy
+
+**Automatic (Recommended):**
+1. Just commit and push to `main`
+2. GitHub Actions will automatically deploy to Vercel
+3. Watch the deployment in **GitHub Actions** tab
+
+**Manual:**
+1. Click **Deploy** in Vercel dashboard
 2. Wait for build to complete
 3. You'll get a URL like: `https://taskcollab-frontend.vercel.app`
 
-### Step 5: Update Backend FRONTEND_URL
+### Step 6: Update Backend FRONTEND_URL
 
 1. Go back to Railway backend project
 2. Update the `FRONTEND_URL` variable to: `https://your-frontend-vercel-url.vercel.app`
 
 ---
 
-## Part 3: Connecting Frontend to Backend
+## Part 3: Setting Up GitHub Secrets for Automated CI/CD
+
+This is required for automatic deployment via GitHub Actions.
+
+### Step 1: Get Railway Token
+
+1. Go to [railway.app](https://railway.app)
+2. Click your **Account** (top-left)
+3. Go to **Tokens**
+4. Click **"New"** and copy the token
+
+### Step 2: Get Vercel Credentials
+
+1. Go to [vercel.com](https://vercel.com)
+2. **Vercel Token**: Account Settings → Tokens → Create
+3. **Vercel Org ID**: Team Settings → General → Copy the ID
+4. **Vercel Project ID**: Project Settings → General → Copy the ID
+
+### Step 3: Add Secrets to GitHub
+
+1. Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions**
+2. Click **"New repository secret"** and add:
+
+| Secret Name | Value |
+|------------|-------|
+| `RAILWAY_TOKEN` | Your Railway token |
+| `VERCEL_TOKEN` | Your Vercel token |
+| `VERCEL_ORG_ID` | Your Vercel Org ID |
+| `VERCEL_PROJECT_ID` | Your Vercel Project ID |
+
+### Step 4: Enable Automatic Deployment
+
+Now every time you push to `main`:
+- ✅ Backend automatically deploys to Railway
+- ✅ Frontend automatically deploys to Vercel
+- ✅ Watch progress in **GitHub Actions** tab
+
+---
+
+## Part 4: Connecting Frontend to Backend
 
 Your frontend already uses the `VITE_API_URL` environment variable in `src/services/api.js`:
 
@@ -134,10 +190,15 @@ When deployed:
 - [ ] `DB_PASSWORD` - Postgres password
 - [ ] `JWT_SECRET` - Strong random secret (min 32 chars)
 - [ ] `FRONTEND_URL` - Vercel frontend URL
-- [ ] `PORT` - (Auto-set by Railway, usually not needed)
 
 ### Vercel Frontend Variables
 - [ ] `VITE_API_URL` - Railway backend URL
+
+### GitHub Secrets (for CI/CD)
+- [ ] `RAILWAY_TOKEN` - Railway authentication token
+- [ ] `VERCEL_TOKEN` - Vercel authentication token
+- [ ] `VERCEL_ORG_ID` - Vercel organization ID
+- [ ] `VERCEL_PROJECT_ID` - Vercel project ID
 
 ---
 
@@ -199,7 +260,28 @@ curl -X GET https://your-backend-railway-url/api/health
 
 ## Next Steps
 
-- Set up GitHub Actions for CI/CD (optional)
-- Configure custom domain for both services
-- Set up monitoring and logging
-- Implement automated backups for PostgreSQL
+- ✅ Set up GitHub Actions CI/CD (automatic deployment on every push)
+- [ ] Configure custom domain for both services
+- [ ] Set up monitoring and logging
+- [ ] Implement automated backups for PostgreSQL
+- [ ] Set up staging environment for testing
+
+---
+
+## 🎉 Summary: Automated Deployment Workflow
+
+After completing all steps, your workflow becomes:
+
+```
+You make changes locally
+         ↓
+    git push origin main
+         ↓
+GitHub Actions triggers automatically
+         ↓
+    Railway Backend Deploys  +  Vercel Frontend Deploys
+         ↓
+    Your app is live!
+```
+
+**No manual deployments needed!** Just push your code and everything deploys automatically. ✨
