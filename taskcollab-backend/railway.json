@@ -6,7 +6,6 @@
   },
   "deploy": {
     "numReplicas": 1,
-    "startCommand": "./mvnw spring-boot:run",
     "restartPolicyType": "on_failure",
     "restartPolicyMaxRetries": 10
   }
