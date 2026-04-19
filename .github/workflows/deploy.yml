@@ -11,12 +11,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
       - name: Deploy Backend to Railway
-        uses: sujaymansingh/railway-deploy-action@1.0.0
-        with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          service_name: taskcollab-backend
-          
+        run: railway up --service taskcollab-backend
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
       - name: Deploy Frontend to Vercel
         uses: amondnet/vercel-action@master
