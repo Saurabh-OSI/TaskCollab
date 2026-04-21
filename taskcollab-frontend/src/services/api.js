@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
+  baseURL: "https://taskcollab-production.up.railway.app",
 });
 
 // ✅ Attach token in every request
