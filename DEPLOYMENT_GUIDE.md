@@ -19,8 +19,12 @@ Complete guide for deploying TaskCollab on Railway (Backend) and Vercel (Fronten
 2. Click **"New Project"** → **"Provision PostgreSQL"**
 3. Wait for the database to be created
 4. Click on the PostgreSQL service to view credentials
-5. Note down these environment variables:
-   - `DATABASE_URL` (or construct from: host, port, username, password, database name)
+5. Railway will expose these database variables to your backend service:
+   - `PGHOST`
+   - `PGPORT`
+   - `PGDATABASE`
+   - `PGUSER`
+   - `PGPASSWORD`
 
 ### Step 2: Deploy Backend Service
 
@@ -34,15 +38,12 @@ Complete guide for deploying TaskCollab on Railway (Backend) and Vercel (Fronten
 After service creation, go to **Variables** and add:
 
 ```
-DB_URL=postgresql://<username>:<password>@<host>:<port>/<database_name>
-DB_USERNAME=<postgres_username>
-DB_PASSWORD=<postgres_password>
 JWT_SECRET=YourV3ryStr0ngJWTSecretKey123!@#$%^&*()_+
 FRONTEND_URL=https://yourfrontend.vercel.app
 ```
 
 **Important:** 
-- Replace values with actual database credentials from PostgreSQL service
+- You do not need to add database credentials manually when your backend and PostgreSQL run in the same Railway project; Railway injects `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, and `PGPASSWORD`
 - Generate a strong JWT secret (use a random 32+ character string)
 - Update `FRONTEND_URL` after deploying frontend
 
@@ -52,9 +53,9 @@ The application.properties already supports environment variables. Railway will 
 
 ```properties
 server.port=${PORT:8080}
-spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/taskcollab}
-spring.datasource.username=${DB_USERNAME:postgres}
-spring.datasource.password=${DB_PASSWORD:password}
+spring.datasource.url=jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}
+spring.datasource.username=${PGUSER}
+spring.datasource.password=${PGPASSWORD}
 app.jwt.secret=${JWT_SECRET:DefaultSecretForLocal}
 app.frontend.url=${FRONTEND_URL:http://localhost:5173}
 ```
@@ -185,11 +186,15 @@ When deployed:
 ## Environment Variables Checklist
 
 ### Railway Backend Variables
-- [ ] `DB_URL` - PostgreSQL connection string
-- [ ] `DB_USERNAME` - Postgres username
-- [ ] `DB_PASSWORD` - Postgres password
 - [ ] `JWT_SECRET` - Strong random secret (min 32 chars)
 - [ ] `FRONTEND_URL` - Vercel frontend URL
+
+### Railway Database Variables
+- [x] `PGHOST` - Provided automatically by Railway PostgreSQL
+- [x] `PGPORT` - Provided automatically by Railway PostgreSQL
+- [x] `PGDATABASE` - Provided automatically by Railway PostgreSQL
+- [x] `PGUSER` - Provided automatically by Railway PostgreSQL
+- [x] `PGPASSWORD` - Provided automatically by Railway PostgreSQL
 
 ### Vercel Frontend Variables
 - [ ] `VITE_API_URL` - Railway backend URL
