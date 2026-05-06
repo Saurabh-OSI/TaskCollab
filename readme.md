@@ -1,174 +1,135 @@
-# TaskCollab – Real-Time Collaborative Task Management System
+# TaskCollab - Real-Time Collaborative Task Management System
 
-TaskCollab is a **full-stack real-time task management (Kanban-style) web application**.
-It allows users to create boards, manage tasks in lists, collaborate with team members, and receive **live updates using WebSockets**.
+TaskCollab is a full-stack collaborative task management app with boards, lists, tasks, authentication, and live updates over WebSockets.
 
-## 🎯 Features
+## Features
 
-1. User Authentication (JWT-based Login & Signup)
-2. Create & Manage Boards
-3. Add/Remove Board Members
-4. Create Lists (To Do, In Progress, Done)
-5. Create, Move, Delete Tasks
-6. Drag & Drop Support
-7. Assign/Unassign Users to Tasks
-8. Search Tasks (by title, list, assignee)
-9. Real-Time Updates (WebSocket + STOMP)
-10. Activity Logs (who did what)
+1. JWT-based signup and login
+2. Create and manage boards
+3. Invite and manage board members
+4. Organize work into task lists
+5. Create, move, assign, and delete tasks
+6. Search tasks by title, list, and assignee
+7. View real-time updates with STOMP over WebSockets
+8. Track activity across boards
 
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Backend
 
-* Java 17
-* Spring Boot 3.5.10
-* Spring Security
-* JWT Authentication
-* Spring Data JPA (Hibernate)
-* PostgreSQL
-* WebSocket (STOMP Protocol)
-* Lombok
-* Maven
+- Java 17
+- Spring Boot 3
+- Spring Security
+- Spring Data JPA
+- PostgreSQL
+- WebSocket + STOMP
+- Maven
 
 ### Frontend
 
-* React 19
-* Vite
-* Tailwind CSS
-* Axios
-* React Router
-* @hello-pangea/dnd (Drag & Drop)
-* @stomp/stompjs (WebSocket)
+- React 19
+- Vite
+- Tailwind CSS
+- Axios
+- React Router
+- @hello-pangea/dnd
+- @stomp/stompjs
 
-## 🚀 Deployment
+## Project Structure
 
-TaskCollab is configured for easy deployment on **Railway** (Backend) and **Vercel** (Frontend).
+```text
+taskcollab-backend/
+  src/main/java/com/saurabh/taskcollab/
+  src/main/resources/
+  Dockerfile
+  pom.xml
 
-### Quick Start
+taskcollab-frontend/
+  src/
+  vercel.json
+  package.json
 
-1. **[Read the Complete Deployment Guide](./DEPLOYMENT_GUIDE.md)** - Step-by-step instructions for both platforms
-2. **Backend**: Push to Railway with PostgreSQL integration
-3. **Frontend**: Deploy React app to Vercel with one click
+.github/workflows/
+render.yaml
+DEPLOYMENT_GUIDE.md
+```
 
-### What's Included
+## Local Development
 
-- ✅ `Dockerfile` - Multi-stage Docker build for optimized backend
-- ✅ `railway.json` - Railway deployment configuration  
-- ✅ `vercel.json` - Vercel frontend configuration
-- ✅ `.env.example` - Environment variable templates
-- ✅ GitHub Actions workflow - Automated CI/CD pipeline
+### Prerequisites
 
-### Environment Variables
+- Java 17+
+- Maven 3.9+
+- Node.js 18+
+- PostgreSQL 12+
 
-**Backend:**
-- `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` - PostgreSQL credentials
-- `JWT_SECRET` - JWT signing secret
-- `FRONTEND_URL` - Frontend URL for CORS
+### Database
 
-**Frontend:**
-- `VITE_API_URL` - Backend API URL
-
-See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed setup instructions.
-
-
-
-## 📋 Prerequisites
-
-Make sure you have installed:
-
-* Java 17+
-* Maven 3.9+
-* Node.js 18+ 
-* PostgreSQL 12+
-* Git
-
-
-## 🗄️ Database Setup
-
-1. Open PostgreSQL
-2. Create database:
+Create a local database:
 
 ```sql
 CREATE DATABASE taskcollab;
 ```
 
-3. Update credentials in `taskcollab-backend/src/main/resources/application.properties`:
+### Backend
 
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/taskcollab
-spring.datasource.username=your_username
-spring.datasource.password=your_password
-```
-
-
-
-## 🚀 Backend Setup (Spring Boot)
+From `taskcollab-backend`, configure a local `.env` file from `.env.example`, then run:
 
 ```bash
-cd taskcollab-backend
 mvn clean install
 mvn spring-boot:run
 ```
 
-Backend will run on: `http://localhost:8080`
+The backend runs on `http://localhost:8080`.
 
+### Frontend
 
-## ⚛️ Frontend Setup (React + Vite)
+From `taskcollab-frontend`, configure `.env` from `.env.example`, then run:
 
 ```bash
-cd taskcollab-frontend
 npm install
 npm run dev
 ```
 
-Frontend will run on: `http://localhost:5173`
+The frontend runs on `http://localhost:5173`.
 
-## 🔐 Environment Variables
-
-### Frontend
-
-Copy `.env.example` to `.env` in `taskcollab-frontend/`:
-
-```env
-VITE_API_URL=http://localhost:8080
-VITE_WS_URL=ws://localhost:8080/ws
-```
+## Environment Variables
 
 ### Backend
 
-Copy `.env.example` to `.env` in `taskcollab-backend/` (optional for local dev)
+- `DB_URL`: Full JDBC PostgreSQL URL. Example: `jdbc:postgresql://localhost:5432/taskcollab`
+- `DB_USERNAME`: Database username
+- `DB_PASSWORD`: Database password
+- `DB_URL_PARAMS`: Optional JDBC suffix such as `?sslmode=require`
+- `JWT_SECRET`: JWT signing secret
+- `FRONTEND_URL`: Allowed frontend origin for CORS and WebSocket handshakes
 
+The backend also supports `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, and `PGPASSWORD` for provider-based setups.
 
-## 🔑 Authentication Flow
+### Frontend
 
-1. User registers with email and password
-2. Logs in → receives JWT token
-3. Token stored in `localStorage`
-4. Token automatically attached in API requests
-5. Unauthorized → auto logout
+- `VITE_API_URL`: Backend base URL
+- `VITE_WS_URL`: Optional explicit WebSocket URL. If omitted, the app derives it from `VITE_API_URL`
 
+## Deployment
 
-## 📡 WebSocket Flow
+TaskCollab is now set up for:
 
-Connects to `/ws` endpoint and subscribes to:
+- Render for the backend
+- Neon for PostgreSQL
+- Vercel for the frontend
 
-* `/topic/boards/{user}` - User's boards
-* `/topic/board/{id}` - Specific board updates
-* `/topic/list/{id}` - List updates  
-* `/topic/task/{id}` - Task updates
+The repository includes:
 
-Enables real-time sync of:
+- `taskcollab-backend/Dockerfile` for the backend image
+- `render.yaml` for Render Blueprint setup
+- `taskcollab-frontend/vercel.json` for the frontend
 
-* Boards
-* Lists
-* Tasks
-* Activity Logs
+See `DEPLOYMENT_GUIDE.md` for the full deployment walkthrough.
 
+## Quick Checks
 
-## ✅ Testing the Backend
-
-Test endpoint:
+Local backend health endpoint:
 
 ```bash
 curl http://localhost:8080/test
@@ -176,155 +137,6 @@ curl http://localhost:8080/test
 
 Expected response:
 
-```
+```text
 Protected API Working
 ```
-
-
-## 📁 Project Structure
-
-### Backend
-
-```
-taskcollab-backend/
-├── src/main/java/com/saurabh/taskcollab/
-│   ├── config/              # Security, WebSocket, JWT config
-│   ├── controller/          # REST API endpoints
-│   ├── dto/                 # Data Transfer Objects
-│   ├── entity/              # JPA entities
-│   ├── exception/           # Custom exceptions
-│   ├── repository/          # Data access layer
-│   ├── service/             # Business logic
-│   └── TaskcollabApplication.java
-├── pom.xml
-├── Dockerfile              # Docker build configuration
-├── railway.json            # Railway deployment config
-└── .env.example
-```
-
-### Frontend
-
-```
-taskcollab-frontend/
-├── src/
-│   ├── components/         # React components
-│   ├── services/           # API & WebSocket services
-│   ├── App.jsx
-│   └── main.jsx
-├── package.json
-├── vite.config.js
-├── vercel.json             # Vercel deployment config
-└── .env.example
-```
-
----
-
-## 🚀 Deployment
-
-TaskCollab is configured for easy deployment on **Railway** (Backend) and **Vercel** (Frontend).
-
-### Quick Start
-
-1. **[Read the Complete Deployment Guide](./DEPLOYMENT_GUIDE.md)** - Step-by-step instructions for both platforms
-2. **Backend**: Push to Railway with PostgreSQL integration
-3. **Frontend**: Deploy React app to Vercel with one click
-
-### What's Included
-
-- ✅ `Dockerfile` - Multi-stage Docker build for optimized backend
-- ✅ `railway.json` - Railway deployment configuration  
-- ✅ `vercel.json` - Vercel frontend configuration
-- ✅ `.env.example` - Environment variable templates
-- ✅ GitHub Actions workflow - Automated CI/CD pipeline
-
-### Environment Variables
-
-**Backend:**
-- `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` - PostgreSQL credentials
-- `JWT_SECRET` - JWT signing secret
-- `FRONTEND_URL` - Frontend URL for CORS
-
-**Frontend:**
-- `VITE_API_URL` - Backend API URL
-
-See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed setup instructions.
-
----
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 👤 Author
-
-**Saurabh**
-- GitHub: [@Saurabh-OSI](https://github.com/Saurabh-OSI/TaskCollab)
-
-## 📧 Support
-
-For issues, questions, or suggestions, please open an issue on GitHub or contact the maintainer.
-exception/
-repository/
-service/
-```
-
-## Frontend
-
-```
-components/
-services/
-```
-
----
-
-## How to Use
-
-1. Register a new user
-2. Login
-3. Create a board
-4. Add members
-5. Create lists
-6. Add tasks
-7. Drag & drop tasks
-8. Assign users
-9. See real-time updates
-
-
-## Common Issues
-
-#  Backend not starting
-
-* Check DB credentials
-* Check port 8080 availability
-
-# WebSocket not connecting
-
-* Ensure backend is running
-* Check `.env` WS URL
-
-# Token issues
-
-* Clear localStorage and login again
-
-
-#  Contribution
-
-Feel free to fork and improve the project!
-
-
-## Author ##
-
-**Saurabh Kumar Singh**
-
-
-

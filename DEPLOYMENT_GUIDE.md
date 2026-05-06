@@ -1,292 +1,177 @@
 # Deployment Guide - TaskCollab
 
-Complete guide for deploying TaskCollab on Railway (Backend) and Vercel (Frontend).
+This guide deploys:
+
+- Backend on Render
+- Database on Neon
+- Frontend on Vercel
 
 ## Prerequisites
 
-- [Railway Account](https://railway.app) (free tier available)
-- [Vercel Account](https://vercel.com) (free tier available)
-- GitHub account with your repository pushed
-- PostgreSQL database (Railway provides this)
+- GitHub repository pushed and accessible from Render and Vercel
+- Render account
+- Neon account
+- Vercel account
 
----
+## Part 1: Create the Neon Database
 
-## Part 1: Railway Backend Deployment
+1. Sign in to [Neon](https://neon.com/).
+2. Create a new project.
+3. Open the project's **Connect** dialog.
+4. Copy these values:
+   - Host
+   - Database name
+   - Username
+   - Password
+5. Build the JDBC URL for Spring Boot:
 
-### Step 1: Create PostgreSQL Database on Railway
-
-1. Go to [railway.app](https://railway.app)
-2. Click **"New Project"** → **"Provision PostgreSQL"**
-3. Wait for the database to be created
-4. Click on the PostgreSQL service to view credentials
-5. Railway will expose these database variables to your backend service:
-   - `PGHOST`
-   - `PGPORT`
-   - `PGDATABASE`
-   - `PGUSER`
-   - `PGPASSWORD`
-
-### Step 2: Deploy Backend Service
-
-1. In Railway dashboard, click **"New"** → **"GitHub Repo"**
-2. Select your TaskCollab repository
-3. Select the `taskcollab-backend` directory as the root
-4. Railway will auto-detect it's a Java project
-
-### Step 3: Configure Environment Variables for Backend
-
-After service creation, go to **Variables** and add:
-
-```
-JWT_SECRET=YourV3ryStr0ngJWTSecretKey123!@#$%^&*()_+
-FRONTEND_URL=https://yourfrontend.vercel.app
+```text
+jdbc:postgresql://<host>:5432/<database>?sslmode=require
 ```
 
-**Important:** 
-- You do not need to add database credentials manually when your backend and PostgreSQL run in the same Railway project; Railway injects `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, and `PGPASSWORD`
-- Generate a strong JWT secret (use a random 32+ character string)
-- Update `FRONTEND_URL` after deploying frontend
+If Neon shows a pooled host ending with `-pooler`, you can use that host in the same JDBC format.
 
-### Step 4: Update Spring Boot Configuration
+## Part 2: Deploy the Backend on Render
 
-The application.properties already supports environment variables. Railway will automatically set port, but ensure the file reads from env:
+### Option A: Use the included `render.yaml`
 
-```properties
-server.port=${PORT:8080}
-spring.datasource.url=jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}
-spring.datasource.username=${PGUSER}
-spring.datasource.password=${PGPASSWORD}
-app.jwt.secret=${JWT_SECRET:DefaultSecretForLocal}
-app.frontend.url=${FRONTEND_URL:http://localhost:5173}
+1. In Render, click **New** -> **Blueprint**.
+2. Connect the `TaskCollab` repository.
+3. Render will detect the root-level `render.yaml`.
+4. When prompted, provide values for:
+   - `DB_URL`
+   - `DB_USERNAME`
+   - `DB_PASSWORD`
+   - `FRONTEND_URL`
+5. Render will generate `JWT_SECRET` automatically from the Blueprint.
+
+### Option B: Create the Web Service manually
+
+1. In Render, click **New** -> **Web Service**.
+2. Connect the `TaskCollab` repository.
+3. Use these settings:
+   - Name: `taskcollab-backend`
+   - Runtime: `Docker`
+   - Root Directory: `taskcollab-backend`
+   - Dockerfile Path: `taskcollab-backend/Dockerfile`
+   - Docker Context: `taskcollab-backend`
+   - Instance Type: `Free`
+   - Auto-Deploy: `Yes`
+   - Health Check Path: `/test`
+
+### Render environment variables
+
+Set these variables on the backend service:
+
+```text
+DB_URL=jdbc:postgresql://<host>:5432/<database>?sslmode=require
+DB_USERNAME=<neon-username>
+DB_PASSWORD=<neon-password>
+JWT_SECRET=<strong-random-secret>
+FRONTEND_URL=https://<your-frontend>.vercel.app
 ```
 
-Your `application.properties` is already configured correctly! ✅
+### Notes
 
-### Step 5: Deploy Backend
+- Render web services must listen on `PORT`; the backend already does this.
+- The backend can also read `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, and `PGPASSWORD`, but `DB_URL` is the simplest setup for Neon.
+- The health endpoint is `GET /test`.
 
-1. The deployment should start automatically
-2. Watch the **Deploy** tab for build logs
-3. Once successful, you'll get a URL like: `https://taskcollab-backend-prod.up.railway.app`
-4. Note this URL - you'll need it for frontend configuration
+## Part 3: Deploy the Frontend on Vercel
 
----
+1. In Vercel, click **Add New** -> **Project**.
+2. Import the same GitHub repository.
+3. Set the root directory to `taskcollab-frontend`.
+4. Confirm these settings:
+   - Framework: `Vite`
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+5. Add this environment variable:
 
-## Part 2: Vercel Frontend Deployment
-
-### Step 1: Connect Repository to Vercel
-
-1. Go to [vercel.com](https://vercel.com)
-2. Click **"Add New..."** → **"Project"**
-3. Import your GitHub repository
-4. Select `taskcollab-frontend` directory as root
-
-### Step 2: Configure Build Settings
-
-Vercel should auto-detect:
-- **Framework**: Vite
-- **Build Command**: `npm run build`
-- **Output Directory**: `dist`
-- **Install Command**: `npm install`
-
-### Step 3: Set Environment Variables
-
-In Vercel project settings, go to **Environment Variables** and add:
-
-```
-VITE_API_URL=https://your-backend-railway-url.railway.app
+```text
+VITE_API_URL=https://<your-render-service>.onrender.com
 ```
 
-Use the Railway backend URL from Step 1, Part 1.
+You usually do not need `VITE_WS_URL`. The frontend derives the WebSocket URL from `VITE_API_URL`.
 
-### Step 4: Automatic Deployment (via GitHub Actions)
+## Part 4: Finish the Backend CORS Configuration
 
-The GitHub Actions workflow will automatically deploy your frontend to Vercel when you push to `main`. 
+After the frontend deploy finishes:
 
-To enable this, add Vercel secrets to GitHub:
-- Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions**
-- Add these secrets:
-  - `VERCEL_TOKEN` - [Get from Vercel Account Settings](https://vercel.com/account/tokens)
-  - `VERCEL_ORG_ID` - [Get from Vercel Team Settings](https://vercel.com/teams)
-  - `VERCEL_PROJECT_ID` - [Get from Vercel Project Settings](https://vercel.com/dashboard)
+1. Copy the Vercel production URL.
+2. Go back to Render.
+3. Update `FRONTEND_URL` on the backend service to match the Vercel URL exactly.
+4. Redeploy the backend if Render does not redeploy automatically after the variable change.
 
-### Step 5: Deploy
+## Part 5: GitHub Integration
 
-**Automatic (Recommended):**
-1. Just commit and push to `main`
-2. GitHub Actions will automatically deploy to Vercel
-3. Watch the deployment in **GitHub Actions** tab
+This repository does not require GitHub Actions for deployment.
 
-**Manual:**
-1. Click **Deploy** in Vercel dashboard
-2. Wait for build to complete
-3. You'll get a URL like: `https://taskcollab-frontend.vercel.app`
+- Backend deploys are handled by Render's Git integration
+- Frontend deploys are handled by Vercel's Git integration
 
-### Step 6: Update Backend FRONTEND_URL
+Once Render and Vercel are connected to this repository, new pushes to `main` can deploy automatically from those platforms.
 
-1. Go back to Railway backend project
-2. Update the `FRONTEND_URL` variable to: `https://your-frontend-vercel-url.vercel.app`
+## Environment Variable Checklist
 
----
+### Render backend
 
-## Part 3: Setting Up GitHub Secrets for Automated CI/CD
+- `DB_URL`
+- `DB_USERNAME`
+- `DB_PASSWORD`
+- `JWT_SECRET`
+- `FRONTEND_URL`
 
-This is required for automatic deployment via GitHub Actions.
+### Vercel frontend
 
-### Step 1: Get Railway Token
-
-1. Go to [railway.app](https://railway.app)
-2. Click your **Account** (top-left)
-3. Go to **Tokens**
-4. Click **"New"** and copy the token
-
-### Step 2: Get Vercel Credentials
-
-1. Go to [vercel.com](https://vercel.com)
-2. **Vercel Token**: Account Settings → Tokens → Create
-3. **Vercel Org ID**: Team Settings → General → Copy the ID
-4. **Vercel Project ID**: Project Settings → General → Copy the ID
-
-### Step 3: Add Secrets to GitHub
-
-1. Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions**
-2. Click **"New repository secret"** and add:
-
-| Secret Name | Value |
-|------------|-------|
-| `RAILWAY_TOKEN` | Your Railway token |
-| `VERCEL_TOKEN` | Your Vercel token |
-| `VERCEL_ORG_ID` | Your Vercel Org ID |
-| `VERCEL_PROJECT_ID` | Your Vercel Project ID |
-
-### Step 4: Enable Automatic Deployment
-
-Now every time you push to `main`:
-- ✅ Backend automatically deploys to Railway
-- ✅ Frontend automatically deploys to Vercel
-- ✅ Watch progress in **GitHub Actions** tab
-
----
-
-## Part 4: Connecting Frontend to Backend
-
-Your frontend already uses the `VITE_API_URL` environment variable in `src/services/api.js`:
-
-```javascript
-const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
-});
-```
-
-When deployed:
-- **Vercel**: Frontend will use `VITE_API_URL` pointing to Railway backend
-- **Railway**: Backend will use `FRONTEND_URL` for CORS configuration
-
----
-
-## Environment Variables Checklist
-
-### Railway Backend Variables
-- [ ] `JWT_SECRET` - Strong random secret (min 32 chars)
-- [ ] `FRONTEND_URL` - Vercel frontend URL
-
-### Railway Database Variables
-- [x] `PGHOST` - Provided automatically by Railway PostgreSQL
-- [x] `PGPORT` - Provided automatically by Railway PostgreSQL
-- [x] `PGDATABASE` - Provided automatically by Railway PostgreSQL
-- [x] `PGUSER` - Provided automatically by Railway PostgreSQL
-- [x] `PGPASSWORD` - Provided automatically by Railway PostgreSQL
-
-### Vercel Frontend Variables
-- [ ] `VITE_API_URL` - Railway backend URL
-
-### GitHub Secrets (for CI/CD)
-- [ ] `RAILWAY_TOKEN` - Railway authentication token
-- [ ] `VERCEL_TOKEN` - Vercel authentication token
-- [ ] `VERCEL_ORG_ID` - Vercel organization ID
-- [ ] `VERCEL_PROJECT_ID` - Vercel project ID
-
----
-
-## Troubleshooting
-
-### Backend Issues
-
-**Build fails on Railway:**
-- Check Java version (requires Java 17)
-- Verify pom.xml is valid
-- Check if Dockerfile is in the correct directory
-
-**Connection to database fails:**
-- Verify `DB_URL` is correct format
-- Ensure PostgreSQL service is running on Railway
-- Check username and password in environment variables
-
-**CORS errors:**
-- Verify `FRONTEND_URL` is set in Railway backend
-- Update Spring Security/CORS configuration if needed
-
-### Frontend Issues
-
-**API calls fail:**
-- Verify `VITE_API_URL` is set in Vercel
-- Check network tab in browser DevTools
-- Ensure backend is running and accessible
-
-**Blank page or routing issues:**
-- Vercel configuration already includes rewrite rule for SPA routing
-- Check browser console for errors
-- Verify JavaScript bundle loaded successfully
-
----
+- `VITE_API_URL`
 
 ## Post-Deployment Testing
 
-### Test Backend
+### Backend
 
-```bash
-curl -X GET https://your-backend-railway-url/api/health
+Open:
+
+```text
+https://<your-render-service>.onrender.com/test
 ```
 
-### Test Frontend
+Expected response:
 
-1. Open your Vercel frontend URL
-2. Try to register/login
-3. Test creating a board and task
-4. Check WebSocket connection in browser DevTools
-
----
-
-## Rolling Back
-
-**Railway**: Click the previous deployment in the "Deploy" tab
-**Vercel**: Click "Deployments" tab and select previous version
-
----
-
-## Next Steps
-
-- ✅ Set up GitHub Actions CI/CD (automatic deployment on every push)
-- [ ] Configure custom domain for both services
-- [ ] Set up monitoring and logging
-- [ ] Implement automated backups for PostgreSQL
-- [ ] Set up staging environment for testing
-
----
-
-## 🎉 Summary: Automated Deployment Workflow
-
-After completing all steps, your workflow becomes:
-
-```
-You make changes locally
-         ↓
-    git push origin main
-         ↓
-GitHub Actions triggers automatically
-         ↓
-    Railway Backend Deploys  +  Vercel Frontend Deploys
-         ↓
-    Your app is live!
+```text
+Protected API Working
 ```
 
-**No manual deployments needed!** Just push your code and everything deploys automatically. ✨
+### Frontend
+
+1. Open the Vercel URL.
+2. Register or log in.
+3. Create a board.
+4. Create a task.
+5. Confirm live updates still work between tabs or sessions.
+
+## Troubleshooting
+
+### Backend fails to start on Render
+
+- Check that the root directory is `taskcollab-backend`
+- Check that `DB_URL` uses the `jdbc:postgresql://...` format
+- Check that the Neon password is correct
+- Confirm `FRONTEND_URL` is a full `https://` URL
+
+### Database connection fails
+
+- Make sure the JDBC URL ends with `?sslmode=require`
+- Recopy the Neon credentials from the Neon dashboard
+- If using a pooled Neon host, keep the same JDBC format and use the pooled hostname
+
+### Frontend cannot call the backend
+
+- Verify `VITE_API_URL` points to the Render backend URL
+- Verify `FRONTEND_URL` on Render exactly matches the Vercel production domain
+
+### WebSocket connection fails
+
+- Confirm the backend is live and reachable on Render
+- Confirm the frontend is using the same Render base URL for API and WebSocket traffic
+- Check browser developer tools for CORS or connection errors

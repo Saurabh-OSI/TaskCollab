@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: taskcollab-backend
+    runtime: docker
+    plan: free
+    rootDir: taskcollab-backend
+    dockerfilePath: ./taskcollab-backend/Dockerfile
+    dockerContext: ./taskcollab-backend
+    autoDeployTrigger: commit
+    healthCheckPath: /test
+    envVars:
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false
