@@ -169,11 +169,6 @@ function Login({ setToken }) {
         {message && <p className="mt-2 text-green-500">{message}</p>}
         {error && <p className="mt-2 text-red-500">{error}</p>}
 
-        <p className="mt-3 text-center text-xs text-slate-500">
-          This demo backend runs on free hosting and can take a minute to wake up
-          after inactivity.
-        </p>
-
         <p
           onClick={() => {
             setIsSignup(!isSignup);
