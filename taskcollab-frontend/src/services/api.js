@@ -1,8 +1,29 @@
 import axios from "axios";
 
+const baseURL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
+  baseURL,
 });
+
+let backendReadyPromise = null;
+
+export const ensureBackendReady = async () => {
+  if (!backendReadyPromise) {
+    backendReadyPromise = axios
+      .get(`${baseURL}/test`, {
+        timeout: 120000,
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      })
+      .finally(() => {
+        backendReadyPromise = null;
+      });
+  }
+
+  return backendReadyPromise;
+};
 
 // ✅ Attach token in every request
 API.interceptors.request.use((config) => {
